@@ -60,7 +60,11 @@
     function startScanner(cameraId) {
       html5QrCode.start(
         cameraId,
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+          {
+              fps: 60, qrbox: { width: 250, height: 250 }, videoConstraints: {
+                  facingMode: "environment" // ← camera sau
+              }
+},
         qrCodeMessage => {
           if (!scanning || qrCodeMessage === lastScanned) return;
 
