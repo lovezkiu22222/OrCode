@@ -73,17 +73,13 @@
         },
         qrCodeMessage => {
           if (!scanning || qrCodeMessage === lastScanned) return;
-          // debugger;
-          // scanning = false;
+          //debugger;
+          scanning = false;
           // lastScanned = qrCodeMessage;
           // const myHeaders = new Headers();
           // myHeaders.append("SOAPAction", "http://tempuri.org/CheckScanOrcode");
           // myHeaders.append("Content-Type", "text/xml; charset=utf-8");
-          // myHeaders.append("Access-Control-Allow-Origin", "*");
-
-
-
-
+          // myHeaders.append("Access-Control-Allow-Origin", "");
           // const raw = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" \r\nxmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n    <soap:Body>\r\n        <CheckScanOrcode xmlns=\"http://tempuri.org/\">\r\n            <idBill>DB00000371</idBill>\r\n        </CheckScanOrcode>\r\n    </soap:Body>\r\n</soap:Envelope>";
 
           // const requestOptions = {
@@ -103,13 +99,14 @@
 
           //     if (dataNode) {
           //       const dataValue = dataNode.textContent;
-          //       document.getElementById("result").innerText = "✅ Mã này đã được quét trước đó" + qrCodeMessage;
+          //       document.getElementById("result").innerText = "✅ Mã này đã được quét trước đó!"
           //     } else {
-          //       document.getElementById("result").innerText = "✅ Quét thành công: " + qrCodeMessage;
+          //       document.getElementById("result").innerText = "✅ Quét thành công!";
           //     }
           //   })
           //   .catch((error) => console.error(error));
-          document.getElementById("result").innerText = "✅ Quét thành công: " + qrCodeMessage;
+
+            document.getElementById("result").innerText = "✅ Quét thành công!";
             setTimeout(() => {
             document.getElementById("result").innerText = "📷 Đang quét lại...";
             scanning = true;
