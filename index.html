@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <title>Quét mã QR</title>
   <script src="OrCode.js"></script>
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       height: 100%;
@@ -17,6 +19,7 @@
       align-items: center;
       justify-content: center;
     }
+
     #reader {
       width: 90vw;
       max-width: 400px;
@@ -24,11 +27,13 @@
       /* ❌ Bỏ border */
       /* border: 2px solid #00FF00; */
     }
+
     #result {
       margin-top: 20px;
       font-size: 1.2em;
       text-align: center;
     }
+
     button {
       padding: 10px 20px;
       margin: 0 10px;
@@ -38,20 +43,22 @@
       background-color: #007b00;
       color: white;
     }
+
     button:hover {
       background-color: #009900;
       cursor: pointer;
     }
   </style>
 </head>
+
 <body>
-   <div id="result" style="padding-bottom: 10px;">
+  <div id="result" style="padding-bottom: 10px;">
     📷 Đang mở camera...
   </div>
   <div id="reader">
 
   </div>
- 
+
 
   <script>
     let html5QrCode;
@@ -66,19 +73,51 @@
         },
         qrCodeMessage => {
           if (!scanning || qrCodeMessage === lastScanned) return;
-
+          debugger;
           scanning = false;
           lastScanned = qrCodeMessage;
-          document.getElementById("result").innerText = "✅ Quét thành công: " + qrCodeMessage;
+          const myHeaders = new Headers();
+          myHeaders.append("SOAPAction", "http://tempuri.org/CheckScanOrcode");
+          myHeaders.append("Content-Type", "text/xml; charset=utf-8");
+          myHeaders.append("Access-Control-Allow-Origin", "*");
 
-          setTimeout(() => {
+
+
+
+          const raw = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \r\nxmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" \r\nxmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n    <soap:Body>\r\n        <CheckScanOrcode xmlns=\"http://tempuri.org/\">\r\n            <idBill>DB00000371</idBill>\r\n        </CheckScanOrcode>\r\n    </soap:Body>\r\n</soap:Envelope>";
+
+          const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
+          };
+          fetch("http://demo.dihotel.top:8099/MobileService.asmx?op=CheckScanOrcode", requestOptions)
+            .then((response) => response.text())
+            .then((result) => {
+
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(result, "text/xml");
+              const ns = "http://tempuri.org/";
+              const dataNode = xmlDoc.getElementsByTagNameNS(ns, "Data")[0];
+
+              if (dataNode) {
+                const dataValue = dataNode.textContent;
+                document.getElementById("result").innerText = "✅ Mã này đã được quét trước đó" + qrCodeMessage;
+              } else {
+                document.getElementById("result").innerText = "✅ Quét thành công: " + qrCodeMessage;
+              }
+            })
+            .catch((error) => console.error(error));
+
+
+            setTimeout(() => {
             document.getElementById("result").innerText = "📷 Đang quét lại...";
             scanning = true;
             lastScanned = "";
           }, 5000);
         },
         errorMessage => {
-          // Có thể bỏ qua lỗi frame
         }
       ).then(() => {
         scanning = true;
@@ -107,4 +146,5 @@
     };
   </script>
 </body>
+
 </html>
