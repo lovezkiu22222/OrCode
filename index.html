@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quét mã QR liên tục</title>
+  <script src="OrCode.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #reader {
+      width: 90vw;
+      max-width: 400px;
+      aspect-ratio: 1;
+      border: 2px solid #00FF00;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+     button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: none;
+      background-color: #007b00;
+      color: white;
+      
+    }
+    button:hover {
+      background-color: #009900;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="reader"></div>
+  <div id="result">📷 Đang mở camera...</div>
+  <!-- <div style="padding-top: 10px;">
+ <button id="stopBtn">⏹️ Dừng quét</button>
+  </div>
+    -->
+  <script>
+    let html5QrCode;
+    let scanning = false;
+    let lastScanned = "";
+
+    function startScanner(cameraId) {
+      html5QrCode.start(
+        cameraId,
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        qrCodeMessage => {
+          if (!scanning || qrCodeMessage === lastScanned) return;
+
+          scanning = false;
+          lastScanned = qrCodeMessage;
+          document.getElementById("result").innerText = "✅ Quét thành công mã: " + qrCodeMessage;
+
+          // Sau 3 giây, cho phép quét lại
+          setTimeout(() => {
+            document.getElementById("result").innerText = "📷 Đang quét lại...";
+            scanning = true;
+            lastScanned = "";
+          }, 5000);
+        },
+        errorMessage => {
+          // Bỏ qua lỗi tạm thời
+        }
+      ).then(() => {
+        scanning = true;
+      }).catch(err => {
+        document.getElementById("result").innerText = "❌ Lỗi mở camera";
+        console.error(err);
+      });
+    }
+
+    window.onload = () => {
+      html5QrCode = new Html5Qrcode("reader");
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          const cameraId = devices.find(d => d.label.toLowerCase().includes("back"))?.id || devices[0].id;
+          startScanner(cameraId);
+        } else {
+          document.getElementById("result").innerText = "❌ Không tìm thấy camera";
+        }
+      }).catch(err => {
+        document.getElementById("result").innerText = "❌ Lỗi camera";
+      });
+    };
+  </script>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quét QR có nút điều khiển</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #reader {
+      width: 90vw;
+      max-width: 400px;
+      aspect-ratio: 1;
+      border: 2px solid #00FF00;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: none;
+      background-color: #007b00;
+      color: white;
+    }
+    button:hover {
+      background-color: #009900;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="reader"></div>
+  <div id="result">📷 Nhấn "Bắt đầu quét"</div>
+  <div class="controls">
+    <button id="startBtn">▶️ Bắt đầu quét</button>
+    <button id="stopBtn">⏹️ Dừng quét</button>
+  </div>
+
+  <script>
+    let html5QrCode = null;
+    let scanning = false;
+    let lastScanned = "";
+    let currentCameraId = null;
+
+    async function startScan() {
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+
+      if (!currentCameraId) {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length) {
+          currentCameraId = devices.find(d => d.label.toLowerCase().includes("back"))?.id || devices[0].id;
+        } else {
+          document.getElementById("result").innerText = "❌ Không tìm thấy camera";
+          return;
+        }
+      }
+
+      html5QrCode.start(
+        currentCameraId,
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        qrCodeMessage => {
+          if (!scanning || qrCodeMessage === lastScanned) return;
+
+          scanning = false;
+          lastScanned = qrCodeMessage;
+          document.getElementById("result").innerText = "✅ Mã: " + qrCodeMessage;
+
+          setTimeout(() => {
+            document.getElementById("result").innerText = "📷 Đang quét lại...";
+            scanning = true;
+            lastScanned = "";
+          }, 3000);
+        },
+        errorMessage => {
+          // bỏ qua lỗi
+        }
+      ).then(() => {
+        scanning = true;
+        document.getElementById("result").innerText = "📷 Đang quét...";
+      }).catch(err => {
+        document.getElementById("result").innerText = "❌ Lỗi mở camera";
+        console.error(err);
+      });
+    }
+
+    async function stopScan() {
+      if (html5QrCode) {
+        try {
+          await html5QrCode.stop();
+          await html5QrCode.clear();
+          scanning = false;
+          document.getElementById("result").innerText = "⏹️ Đã dừng quét";
+        } catch (err) {
+          console.error("Lỗi khi dừng quét:", err);
+        }
+      }
+    }
+
+    // Đảm bảo sự kiện được gán sau khi DOM tải xong
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("startBtn").addEventListener("click", startScan);
+      document.getElementById("stopBtn").addEventListener("click", stopScan);
+    });
+  </script>
+</body>
+</html> -->
+
+
