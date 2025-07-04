@@ -2,8 +2,8 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Quét mã QR liên tục</title>
-  <script src="OrCode.js"></script> <!-- Đảm bảo OrCode.js chứa Html5Qrcode -->
+  <title>Quét mã QR</title>
+  <script src="OrCode.js"></script>
   <style>
     html, body {
       margin: 0;
@@ -21,7 +21,8 @@
       width: 90vw;
       max-width: 400px;
       aspect-ratio: 1;
-      border: 2px solid #00FF00;
+      /* ❌ Bỏ border */
+      /* border: 2px solid #00FF00; */
     }
     #result {
       margin-top: 20px;
@@ -56,8 +57,7 @@
       html5QrCode.start(
         cameraId,
         {
-          fps: 30,
-          qrbox: { width: 250, height: 250 },
+          fps: 60 // ❌ Không khai báo qrbox để bỏ khung
         },
         qrCodeMessage => {
           if (!scanning || qrCodeMessage === lastScanned) return;
@@ -73,7 +73,7 @@
           }, 5000);
         },
         errorMessage => {
-          // Có thể bỏ qua lỗi từng frame
+          // Có thể bỏ qua lỗi frame
         }
       ).then(() => {
         scanning = true;
@@ -88,11 +88,9 @@
 
       Html5Qrcode.getCameras().then(devices => {
         if (devices && devices.length > 0) {
-          // Ưu tiên camera có chữ "back"
           let backCam = devices.find(d => d.label.toLowerCase().includes("back"));
-          if (!backCam && devices.length > 1) {
-            backCam = devices[1]; // Thử camera thứ 2
-          }
+          if (!backCam && devices.length > 1) backCam = devices[1];
+
           const cameraId = backCam?.id || devices[0].id;
           startScanner(cameraId);
         } else {
@@ -100,7 +98,6 @@
         }
       }).catch(err => {
         document.getElementById("result").innerText = "❌ Lỗi truy cập camera: " + err;
-        console.error(err);
       });
     };
   </script>
